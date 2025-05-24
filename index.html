@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Caída Libre</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        /* Style for number inputs specifically */
+        .input-group input[type="number"] {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .radio-group {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .radio-group label {
+            margin-right: 20px;
+            font-weight: normal;
+        }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .buttons button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.3s ease;
+        }
+        .buttons button:hover {
+            background-color: #0056b3;
+        }
+        .buttons button.clear {
+            background-color: #dc3545;
+        }
+        .buttons button.clear:hover {
+            background-color: #c82333;
+        }
+        #results {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 25px;
+            min-height: 50px;
+            white-space: pre-wrap; /* Preserve line breaks */
+            border: 1px solid #ced4da;
+        }
+        #results p {
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora para Movimiento Vertical de Caída Libre</h1>
+        <hr>
+        <h2>Datos de Entrada</h2>
+
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="direccion" value="1" checked> Baja
+            </label>
+            <label>
+                <input type="radio" name="direccion" value="2"> Sube
+            </label>
+        </div>
+
+        <div class="input-group">
+            <label for="g">Gravedad (g) [m/s²]:</label>
+            <input type="number" id="g" step="any" placeholder="Ej: 9.8">
+        </div>
+        <div class="input-group">
+            <label for="Vo">Velocidad Inicial (Vo) [m/s]:</label>
+            <input type="number" id="Vo" step="any" placeholder="Ej: 0">
+        </div>
+        <div class="input-group">
+            <label for="Vf">Velocidad Final (Vf) [m/s]:</label>
+            <input type="number" id="Vf" step="any" placeholder="Ej: 0">
+        </div>
+        <div class="input-group">
+            <label for="h">Altura (h) [m]:</label>
+            <input type="number" id="h" step="any" placeholder="Ej: 100">
+        </div>
+        <div class="input-group">
+            <label for="t">Tiempo (t) [s]:</label>
+            <input type="number" id="t" step="any" placeholder="Ej: 5">
+        </div>
+
+        <div class="buttons">
+            <button onclick="calculate()">Calcular</button>
+            <button class="clear" onclick="clearInputs()">Limpiar</button>
+        </div>
+
+        <hr>
+        <h2>Resultados</h2>
+        <div id="results">
+            <p>Los resultados aparecerán aquí. Deja el campo de la variable que quieres calcular vacío.</p>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const direction = parseInt(document.querySelector('input[name="direccion"]:checked').value);
+
+            // Get values, parse to float or null if empty
+            let g = document.getElementById('g').value !== '' ? parseFloat(document.getElementById('g').value) : null;
+            let Vo = document.getElementById('Vo').value !== '' ? parseFloat(document.getElementById('Vo').value) : null;
+            let Vf = document.getElementById('Vf').value !== '' ? parseFloat(document.getElementById('Vf').value) : null;
+            let h = document.getElementById('h').value !== '' ? parseFloat(document.getElementById('h').value) : null;
+            let t = document.getElementById('t').value !== '' ? parseFloat(document.getElementById('t').value) : null;
+
+            let resultsOutput = "";
+            let unknownsCount = 0;
+            let unknownVariable = ''; // To store which variable is unknown
+
+            if (g === null) { unknownsCount++; unknownVariable = 'g'; }
+            if (Vo === null) { unknownsCount++; unknownVariable = 'Vo'; }
+            if (Vf === null) { unknownsCount++; unknownVariable = 'Vf'; }
+            if (h === null) { unknownsCount++; unknownVariable = 'h'; }
+            if (t === null) { unknownsCount++; unknownVariable = 't'; }
+
+            if (unknownsCount === 0) {
+                resultsOutput = "Todos los valores están llenos. No hay nada que calcular. Deja el campo de la variable que quieres calcular vacío.";
+            } else if (unknownsCount > 2) {
+                resultsOutput = "Por favor, deja solo DOS variables desconocidas para calcular (un campo vacío).";
+            } else {
+                // Apply gravity direction if going up
+                if (direction === 2 && unknownVariable !== 'g') { // Only apply if g is known
+                    g = g * (-1);
+                }
+                // If g is the unknown, it will be calculated as is (its sign will reflect direction)
+                if (unknownVariable === 'g' && direction === 2) {
+                     // We don't modify g here, as it's the target. The formulas will inherently yield a negative g for upward motion.
+                }
+
+                try {
+                    switch (unknownVariable) {
+                        case 'Vo':
+                            if (Vf !== null && g !== null && t !== null) { // Vf = Vo + gt  => Vo = Vf - gt
+                                Vo = Vf - g * t;
+                                resultsOutput = `La velocidad inicial es de: ${Vo.toFixed(2)} m/s`;
+                            } else if (Vf !== null && g !== null && h !== null) { // Vf² = Vo² + 2gh => Vo = sqrt(Vf² - 2gh)
+                                const discriminant = Vf * Vf - 2 * g * h;
+                                if (discriminant < 0) throw new Error("Raíz cuadrada de un número negativo para calcular Vo.");
+                                Vo = Math.sqrt(discriminant);
+                                resultsOutput = `La velocidad inicial es de: ${Vo.toFixed(2)} m/s`;
+                            } else if (h !== null && t !== null && g !== null) { // h = Vot + 1/2gt² => Vo = (h - 1/2gt²)/t
+                                Vo = (h - 0.5 * g * t * t) / t;
+                                resultsOutput = `La velocidad inicial es de: ${Vo.toFixed(2)} m/s`;
+                            } else {
+                                resultsOutput = "Faltan datos para calcular la Velocidad Inicial (Vo).";
+                            }
+                            break;
+
+                        case 'Vf':
+                            if (Vo !== null && g !== null && t !== null) { // Vf = Vo + gt
+                                Vf = Vo + g * t;
+                                resultsOutput = `La velocidad final es de: ${Vf.toFixed(2)} m/s`;
+                            } else if (Vo !== null && g !== null && h !== null) { // Vf² = Vo² + 2gh => Vf = sqrt(Vo² + 2gh)
+                                const discriminant = Vo * Vo + 2 * g * h;
+                                if (discriminant < 0) throw new Error("Raíz cuadrada de un número negativo para calcular Vf.");
+                                Vf = Math.sqrt(discriminant);
+                                resultsOutput = `La velocidad final es de: ${Vf.toFixed(2)} m/s`;
+                            } else if (Vo !== null && h !== null && t !== null) { // h = (Vo + Vf)/2 * t => Vf = (2h/t) - Vo
+                                Vf = (2 * h / t) - Vo;
+                                resultsOutput = `La velocidad final es de: ${Vf.toFixed(2)} m/s`;
+                            } else {
+                                resultsOutput = "Faltan datos para calcular la Velocidad Final (Vf).";
+                            }
+                            break;
+
+                        case 'h':
+                            if (Vo !== null && g !== null && t !== null) { // h = Vot + 1/2gt²
+                                h = (Vo * t) + (0.5 * g * t * t);
+                                resultsOutput = `La altura es de: ${h.toFixed(2)} m`;
+                            } else if (Vo !== null && Vf !== null && t !== null) { // h = (Vo + Vf)/2 * t
+                                h = ((Vo + Vf) / 2) * t;
+                                resultsOutput = `La altura es de: ${h.toFixed(2)} m`;
+                            } else if (Vo !== null && Vf !== null && g !== null) { // Vf² = Vo² + 2gh => h = (Vf² - Vo²)/2g
+                                if (g === 0) throw new Error("No se puede dividir por cero para calcular la altura (g es 0).");
+                                h = (Vf * Vf - Vo * Vo) / (2 * g);
+                                resultsOutput = `La altura es de: ${h.toFixed(2)} m`;
+                            } else {
+                                resultsOutput = "Faltan datos para calcular la Altura (h).";
+                            }
+                            break;
+
+                        case 't':
+                            if (Vo !== null && Vf !== null && g !== null) { // Vf = Vo + gt => t = (Vf - Vo)/g
+                                if (g === 0) throw new Error("No se puede dividir por cero para calcular el tiempo (g es 0).");
+                                t = (Vf - Vo) / g;
+                                if (t < 0) throw new Error("El tiempo calculado es negativo. Revise sus entradas.");
+                                resultsOutput = `El tiempo es de: ${t.toFixed(2)} s`;
+                            } else if (Vo !== null && h !== null && g !== null) { // h = Vot + 1/2gt² (Quadratic equation: 0.5gt² + Vot - h = 0)
+                                if (g === 0) { // If g is 0, it's uniform motion: h = Vo*t => t = h/Vo
+                                    if (Vo === 0) throw new Error("No se puede calcular el tiempo si Vo y g son cero.");
+                                    t = h / Vo;
+                                    if (t < 0) throw new Error("El tiempo calculado es negativo. Revise sus entradas.");
+                                    resultsOutput = `El tiempo es de: ${t.toFixed(2)} s`;
+                                } else {
+                                    const a_quad = 0.5 * g;
+                                    const b_quad = Vo;
+                                    const c_quad = -h;
+                                    const discriminant = b_quad * b_quad - 4 * a_quad * c_quad;
+
+                                    if (discriminant < 0) throw new Error("Raíz cuadrada de un número negativo para calcular el tiempo.");
+
+                                    const t1 = (-b_quad + Math.sqrt(discriminant)) / (2 * a_quad);
+                                    const t2 = (-b_quad - Math.sqrt(discriminant)) / (2 * a_quad);
+
+                                    let validTimes = [];
+                                    if (t1 > 0) validTimes.push(t1.toFixed(2));
+                                    if (t2 > 0 && t1.toFixed(2) !== t2.toFixed(2)) validTimes.push(t2.toFixed(2));
+
+                                    if (validTimes.length > 0) {
+                                        resultsOutput = `El tiempo es de: ${validTimes.join(" o ")} s`;
+                                    } else {
+                                        throw new Error("No se encontró un tiempo positivo válido.");
+                                    }
+                                }
+                            } else if (h !== null && Vf !== null && Vo !== null) { // h = (Vo + Vf)/2 * t => t = 2h / (Vo + Vf)
+                                if (Vo + Vf === 0) throw new Error("No se puede dividir por cero para calcular el tiempo (Vo + Vf es 0).");
+                                t = (2 * h) / (Vo + Vf);
+                                if (t < 0) throw new Error("El tiempo calculado es negativo. Revise sus entradas.");
+                                resultsOutput = `El tiempo es de: ${t.toFixed(2)} s`;
+                            } else {
+                                resultsOutput = "Faltan datos para calcular el Tiempo (t).";
+                            }
+                            break;
+
+                        case 'g': // Renamed to 'a' in original C++ logic, but represents g for free fall
+                            if (Vo !== null && Vf !== null && t !== null) { // Vf = Vo + gt => g = (Vf - Vo)/t
+                                if (t === 0) throw new Error("No se puede dividir por cero para calcular la gravedad (t es 0).");
+                                g = (Vf - Vo) / t;
+                                resultsOutput = `La gravedad/aceleración es de: ${g.toFixed(2)} m/s²`;
+                            } else if (Vo !== null && h !== null && t !== null) { // h = Vot + 1/2gt² => 1/2gt² = h - Vot => g = 2 * (h - Vot) / t²
+                                if (t === 0) throw new Error("No se puede dividir por cero para calcular la gravedad (t es 0).");
+                                g = (2 * (h - (Vo * t))) / (t * t);
+                                resultsOutput = `La gravedad/aceleración es de: ${g.toFixed(2)} m/s²`;
+                            } else if (Vo !== null && Vf !== null && h !== null) { // Vf² = Vo² + 2gh => 2gh = Vf² - Vo² => g = (Vf² - Vo²)/2h
+                                if (h === 0) throw new Error("No se puede dividir por cero para calcular la gravedad (h es 0).");
+                                g = (Vf * Vf - Vo * Vo) / (2 * h);
+                                resultsOutput = `La gravedad/aceleración es de: ${g.toFixed(2)} m/s²`;
+                            } else {
+                                resultsOutput = "Faltan datos para calcular la Gravedad/Aceleración (g).";
+                            }
+                            break;
+
+                        default:
+                            resultsOutput = "Ha ocurrido un error inesperado.";
+                    }
+                } catch (error) {
+                    resultsOutput = `Error en el cálculo: ${error.message}`;
+                }
+            }
+
+            document.getElementById('results').innerText = resultsOutput;
+        }
+
+        function clearInputs() {
+            document.getElementById('g').value = '';
+            document.getElementById('Vo').value = '';
+            document.getElementById('Vf').value = '';
+            document.getElementById('h').value = '';
+            document.getElementById('t').value = '';
+            document.querySelector('input[name="direccion"][value="1"]').checked = true; // Default to "Baja"
+            document.getElementById('results').innerText = "Los resultados aparecerán aquí. Deja el campo de la variable que quieres calcular vacío.";
+        }
+    </script>
+</body>
+</html>

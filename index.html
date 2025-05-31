@@ -312,19 +312,7 @@
                 default: // Si unknownVariable no coincide con ningún caso.
                     resultsOutput = "Ha ocurrido un error inesperado. Asegúrate de dejar un campo vacío o dos para calcular.";
             }
-            // Falta la lógica para cuando unknownsCount === 2 (dos variables desconocidas)
-            // Tu código actual solo maneja 'unknownsCount === 1' en el switch principal.
-            // Para unknownsCount === 2, necesitarías un bloque de lógica adicional que
-            // identifique qué dos variables son nulas y aplique el sistema de ecuaciones correspondiente.
-            // Por ejemplo:
-            /*
-            } else if (unknownsCount === 2) {
-                // Aquí iría la lógica para resolver sistemas de ecuaciones
-                // Ejemplo: si Vo === null y t === null, pero Vf, g, h son conocidos
-                // se resolvería un sistema de ecuaciones para Vo y t.
-                // Esto es mucho más complejo y requeriría anidar más 'if/else if' o un switch anidado.
-                resultsOutput = "La lógica para dos incógnitas aún no está implementada.";
-            */
+            
 
         } catch (error) { // Captura cualquier error que ocurra dentro del bloque try (ej. división por cero, raíz de negativo).
             resultsOutput = `Error en el cálculo: ${error.message}`; // Muestra el mensaje de error.
